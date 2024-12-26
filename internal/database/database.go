@@ -5,6 +5,8 @@ import (
 	"log"
 
 	_ "github.com/mattn/go-sqlite3"
+
+	"florent-haxhiu/todoInGo/internal/model"
 )
 
 const (
@@ -28,34 +30,46 @@ type NoteMethods interface {
 	UpdateNote(note Note, userId int) Note
 }
 
-func CreateClient() *Client {
+func CreateClient() *model.Client {
 	db, err := sql.Open("sqlite3", dbname)
 	if err != nil {
 		log.Fatal(err)
 	}
-	return &Client{
+	return &model.Client{
 		Connection: db,
 	}
 }
 
-func (c *Client) GetNote(id int) Note {
-	var note Note
+func GetNote(id int) model.Note {
+	var note model.Note
+	c := *CreateClient()
 
-	sql_item := c.Connection.QueryRow("SELECT $1 FROM Inventory", id)
+	sql_item := c.Connection.QueryRow("SELECT ? FROM Notes", id)
 	sql_item.Scan(&note)
 
 	return note
 }
 
-func (c *Client) CreateNote(createdNote Note, userId int) Note {
-	return createdNote
+func CreateNote(createdNote model.Note, userId int) (model.Note, error) {
+	c := *CreateClient()
+
+	statement, err := c.Connection.Prepare("INSERT INTO Notes (id, title, body, userId) VALUES (?, ?, ?, ?)")
+	if err != nil {
+		return model.Note{}, err
+	}
+
+	statement.Exec(createdNote.Id, createdNote.Title, createdNote.Body, createdNote.UserId)
+
+	return createdNote, nil
 }
 
-func (c *Client) DeleteNote(noteId int, userId int) Note {
-	var note Note
+func DeleteNote(noteId int, userId int) model.Note {
+	var note model.Note
+	// _ := *CreateClient()
 	return note
 }
 
-func (c *Client) UpdateNote(note Note, userId int) Note {
+func UpdateNote(note model.Note, userId int) model.Note {
+	// _ := *CreateClient()
 	return note
 }
