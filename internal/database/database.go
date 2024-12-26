@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	dbname = "todo"
+	dbname = "todo.db"
 )
 
 type Client struct {
