@@ -1,4 +1,4 @@
-module florent-haxhiu/todo-go
+module florent-haxhiu/todoInGo
 
 go 1.23.4
 
