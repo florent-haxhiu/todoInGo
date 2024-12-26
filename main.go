@@ -3,7 +3,7 @@ package main
 import (
 	"net/http"
 
-	"florent-haxhiu/todo-go/internal/router"
+	"florent-haxhiu/todoInGo/internal/router"
 )
 
 func main() {
