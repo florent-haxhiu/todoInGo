@@ -13,23 +13,6 @@ const (
 	dbname = "todo.db"
 )
 
-type Client struct {
-	Connection *sql.DB
-}
-
-type Note struct {
-	Id   int    `json:"id"`
-	Name string `json:"name"`
-	Body string `json:"body"`
-}
-
-type NoteMethods interface {
-	GetNote(id int) Note
-	CreateNote(createdNote Note, userId int) Note
-	DeleteNote(noteId int, userId int) Note
-	UpdateNote(note Note, userId int) Note
-}
-
 func CreateClient() *model.Client {
 	db, err := sql.Open("sqlite3", dbname)
 	if err != nil {
