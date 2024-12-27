@@ -15,6 +15,7 @@ func Router() *chi.Mux {
 	r.Use(middleware.Recoverer)
 
 	r.Route("/note", func(r chi.Router) {
+		r.Get("/", controllers.GetAllNotes)
 		r.Route("/{noteId}", func(r chi.Router) {
 			r.Get("/", controllers.GetNote)
             r.Put("/", controllers.UpdateNote)
