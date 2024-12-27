@@ -17,6 +17,7 @@ func Router() *chi.Mux {
 	r.Route("/note", func(r chi.Router) {
 		r.Route("/{noteId}", func(r chi.Router) {
 			r.Get("/", controllers.GetNote)
+            r.Put("/", controllers.UpdateNote)
 		})
 		r.Post("/", controllers.PostNote)
 	})

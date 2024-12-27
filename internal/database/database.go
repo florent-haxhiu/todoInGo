@@ -52,7 +52,13 @@ func DeleteNote(noteId int, userId int) model.Note {
 	return note
 }
 
-func UpdateNote(note model.Note, userId int) model.Note {
-	// _ := *CreateClient()
-	return note
+func UpdateNote(note model.Note, userId int) (model.Note, error) {
+	c := *CreateClient()
+
+    statement, err := c.Connection.Prepare("UPDATE Notes SET title=?, body=?")
+    if err != nil {
+        return model.Note{}, err
+    }
+    statement.Exec(note.Title, note.Body)
+	return note, nil
 }

@@ -61,5 +61,16 @@ func PostNote(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateNote(w http.ResponseWriter, r *http.Request) {
-	// Update Note
+    var noteToUpdate model.Note
+
+    dec := json.NewDecoder(r.Body)
+    dec.DisallowUnknownFields()
+    
+    err := dec.Decode(&noteToUpdate)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
 }
+
+func decodeToNote(note model.Note) {}
