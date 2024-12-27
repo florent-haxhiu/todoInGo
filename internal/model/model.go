@@ -17,3 +17,7 @@ type Response struct {
 	Message     string `json:"message"`
 	CreatedNote Note   `json:"createdNote"`
 }
+
+type ResponseNotes struct {
+	Data []Note `json:"data"`
+}
