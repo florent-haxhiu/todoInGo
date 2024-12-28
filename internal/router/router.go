@@ -26,7 +26,7 @@ func Router() *chi.Mux {
 		})
 	})
 	r.Route("/auth", func(r chi.Router) {
-		r.Post("/signup", Register)
+		r.Post("/register", Register)
 		r.Post("/login", Login)
 	})
 
