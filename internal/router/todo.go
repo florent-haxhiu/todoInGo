@@ -12,10 +12,11 @@ import (
 )
 
 func GetNote(w http.ResponseWriter, r *http.Request) {
-	string_id := chi.URLParam(r, "noteId")
+	stringId := chi.URLParam(r, "noteId")
 
-	noteId := uuid.MustParse(string_id)
-	userId := uuid.New()
+	noteId := uuid.MustParse(stringId)
+	userId := r.Context().Value("userId").(string)
+    //userId := uuid.MustParse(userIdString)
 
 	note := db.GetNote(noteId, userId)
 
