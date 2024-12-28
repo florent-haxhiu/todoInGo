@@ -1,21 +1,44 @@
 package model
 
-import "database/sql"
+import (
+	"database/sql"
+
+	"github.com/google/uuid"
+)
 
 type Client struct {
 	Connection *sql.DB
 }
 
 type Note struct {
-	Id     int    `json:"id"`
-	Title  string `json:"title"`
-	Body   string `json:"body"`
-	UserId string `json:"userId"`
+	Id     uuid.UUID `json:"id"`
+	Title  string    `json:"title"`
+	Body   string    `json:"body"`
+	UserId uuid.UUID `json:"userId"`
+}
+
+type UserRegister struct {
+	Id       uuid.UUID `json:"id"`
+	Username string    `json:"username"`
+	Password string
+}
+
+type UserPassHashed struct {
+	Id       uuid.UUID `json:"id"`
+	Username string    `json:"username"`
+	Password string
 }
 
 type Response struct {
-	Message     string `json:"message"`
-	CreatedNote Note   `json:"createdNote"`
+	Message string `json:"message"`
+	Note    Note   `json:"createdNote"`
+}
+
+type UserRegisterResponse struct{}
+
+type UserLoginResponse struct {
+	Token      string `json:"token"`
+	Expiration int    `json:"expiration"`
 }
 
 type ResponseNotes struct {
