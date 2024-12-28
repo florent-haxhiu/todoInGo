@@ -45,7 +45,7 @@ func generateToken(user model.UserPassHashed) *jwt.Token {
 func saltPassword(user model.UserRegister) model.UserPassHashed {
 	var hashed model.UserPassHashed
 
-	print(user)
+	fmt.Println(user)
 
 	return hashed
 }
