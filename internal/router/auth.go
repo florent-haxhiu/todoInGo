@@ -1,4 +1,4 @@
-package auth
+package router
 
 import (
 	"encoding/json"
@@ -11,11 +11,9 @@ import (
 	"florent-haxhiu/todoInGo/internal/model"
 )
 
-type AuthResources struct{}
+func Login(w http.ResponseWriter, r *http.Request) {}
 
-func (ar AuthResources) Login(w http.ResponseWriter, r *http.Request) {}
-
-func (ar AuthResources) Register(w http.ResponseWriter, r *http.Request) {
+func Register(w http.ResponseWriter, r *http.Request) {
 	var user model.UserRegister
 
 	fmt.Println(user)
@@ -28,14 +26,14 @@ func (ar AuthResources) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	done, err := db.SaveUserToDB(ar.saltPassword(user))
+	err = db.SaveUserToDB(saltPassword(user))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusTeapot)
 		return
 	}
 }
 
-func (ar AuthResources) generateToken(user model.UserPassHashed) *jwt.Token {
+func generateToken(user model.UserPassHashed) *jwt.Token {
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, jwt.MapClaims{
 		"username": user.Username,
 		"password": user.Password,
@@ -44,7 +42,7 @@ func (ar AuthResources) generateToken(user model.UserPassHashed) *jwt.Token {
 	return token
 }
 
-func (ar AuthResources) saltPassword(user model.UserRegister) model.UserPassHashed {
+func saltPassword(user model.UserRegister) model.UserPassHashed {
 	var hashed model.UserPassHashed
 
 	print(user)
@@ -52,4 +50,4 @@ func (ar AuthResources) saltPassword(user model.UserRegister) model.UserPassHash
 	return hashed
 }
 
-func (ar AuthResources) unhashPassword() {}
+func unhashPassword() {}

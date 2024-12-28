@@ -1,26 +1,25 @@
-package controllers
+package router
 
 import (
 	"encoding/json"
 	"net/http"
-	"strconv"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
 
 	db "florent-haxhiu/todoInGo/internal/database"
 	"florent-haxhiu/todoInGo/internal/model"
 )
 
 func GetNote(w http.ResponseWriter, r *http.Request) {
-	string_id := chi.URLParam(r, "id")
-	i, err := strconv.Atoi(string_id)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotAcceptable)
-		return
-	}
+	string_id := chi.URLParam(r, "noteId")
 
-	note := db.GetNote(i)
-	b, err := json.Marshal(model.Response{Message: "Note successfully retrieved", CreatedNote: note})
+	noteId := uuid.MustParse(string_id)
+	userId := uuid.New()
+
+	note := db.GetNote(noteId, userId)
+
+	b, err := json.Marshal(model.Response{Message: "Note retrieved", Note: note})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -61,13 +60,13 @@ func PostNote(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	createdNote, err := db.CreateNote(note, 0)
+	createdNote, err := db.CreateNote(note)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	resp := model.Response{Message: "Note was successfully created", CreatedNote: createdNote}
+	resp := model.Response{Message: "Note was successfully created", Note: createdNote}
 
 	b, err := json.Marshal(resp)
 	if err != nil {

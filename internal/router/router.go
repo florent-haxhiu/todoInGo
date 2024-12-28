@@ -3,8 +3,6 @@ package router
 import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-
-	"florent-haxhiu/todoInGo/internal/controllers"
 )
 
 func Router() *chi.Mux {
@@ -15,12 +13,16 @@ func Router() *chi.Mux {
 	r.Use(middleware.Recoverer)
 
 	r.Route("/note", func(r chi.Router) {
-		r.Get("/", controllers.GetAllNotes)
-		r.Post("/", controllers.PostNote)
+		r.Get("/", GetAllNotes)
+		r.Post("/", PostNote)
 		r.Route("/{noteId}", func(r chi.Router) {
-			r.Get("/", controllers.GetNote)
-			r.Put("/", controllers.UpdateNote)
+			r.Get("/", GetNote)
+			r.Put("/", UpdateNote)
 		})
+	})
+	r.Route("/auth", func(r chi.Router) {
+		r.Post("/signup", Register)
+		r.Post("/login", Login)
 	})
 
 	return r
