@@ -28,7 +28,11 @@ func GetAllNotes() ([]model.Note, error) {
 	var notes []model.Note
 	c := *createClient()
 
-	rows, err := c.Connection.Query("SELECT * FROM Notes")
+    userId := uuid.New()
+    
+    // Get the token, unhash it, and get the user and input the userId where the userId is
+
+	rows, err := c.Connection.Query("SELECT * FROM Notes WHERE userId = ?", userId)
 	if err != nil {
 		return nil, err
 	}
