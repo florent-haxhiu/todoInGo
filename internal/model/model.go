@@ -29,6 +29,11 @@ type UserPassHashed struct {
 	Password string
 }
 
+type TokenPayload struct {
+    UserId uuid.UUID `json:"userId"`
+    Username string `json:"username"`
+}
+
 type Response struct {
 	Message string `json:"message"`
 	Note    Note   `json:"createdNote"`
