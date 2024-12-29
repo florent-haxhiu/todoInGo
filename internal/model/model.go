@@ -6,6 +6,8 @@ import (
 	"github.com/google/uuid"
 )
 
+type UserId string
+
 type Client struct {
 	Connection *sql.DB
 }
