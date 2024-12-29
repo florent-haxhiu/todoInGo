@@ -15,10 +15,9 @@ func GetNote(w http.ResponseWriter, r *http.Request) {
 	stringId := chi.URLParam(r, "noteId")
 
 	noteId := uuid.MustParse(stringId)
-	userId := r.Context().Value("userId").(string)
-    //userId := uuid.MustParse(userIdString)
+	userIdString := r.Context().Value("userId").(string)
 
-	note := db.GetNote(noteId, userId)
+	note := db.GetNote(noteId, userIdString)
 
 	b, err := json.Marshal(model.Response{Message: "Note retrieved", Note: note})
 	if err != nil {
@@ -31,7 +30,9 @@ func GetNote(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetAllNotes(w http.ResponseWriter, r *http.Request) {
-	notes, err := db.GetAllNotes()
+	userIdString := r.Context().Value(model.UserId("userId")).(string)
+
+	notes, err := db.GetAllNotes(userIdString)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
