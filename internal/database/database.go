@@ -51,11 +51,11 @@ func GetAllNotes(userId string) ([]model.Note, error) {
 	return notes, nil
 }
 
-func GetNote(id uuid.UUID, userId uuid.UUID) model.Note {
+func GetNote(id uuid.UUID, userId string) model.Note {
 	var note model.Note
 	c := *createClient()
 
-	row := c.Connection.QueryRow("SELECT ? FROM Notes WHERE userId = ?", id, userId.String())
+	row := c.Connection.QueryRow("SELECT ? FROM Notes WHERE userId = ?", id, userId)
 	row.Scan(&note)
 
 	return note
