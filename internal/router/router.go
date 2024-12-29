@@ -1,12 +1,14 @@
 package router
 
 import (
-    "fmt"
-    "context"
-    "net/http"
+	"context"
+	"fmt"
+	"net/http"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+
+	"florent-haxhiu/todoInGo/internal/model"
 )
 
 func Router() *chi.Mux {
@@ -17,10 +19,10 @@ func Router() *chi.Mux {
 	r.Use(middleware.Recoverer)
 
 	r.Route("/note", func(r chi.Router) {
+		r.Use(authorizeSession)
 		r.Get("/", GetAllNotes)
 		r.Post("/", PostNote)
 		r.Route("/{noteId}", func(r chi.Router) {
-            r.Use(authorizeSession)
 			r.Get("/", GetNote)
 			r.Put("/", UpdateNote)
 		})
@@ -34,13 +36,17 @@ func Router() *chi.Mux {
 }
 
 func authorizeSession(next http.Handler) http.Handler {
-    return http.HandlerFunc(func (w http.ResponseWriter, r *http.Request) {
-        token := r.Header.Get("Authorization")
-        fmt.Println(token)
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		token := r.Header.Get("Authorization")
 
-        claims := verifyToken(token)
+		claims, err := verifyToken(token)
+		if err != nil {
+			fmt.Println(err.Error())
+		}
 
-        ctx := context.WithValue(r.Context(), "userId", claims)
-        next.ServeHTTP(w, r.WithContext(ctx))
-    })
+		k := model.UserId("userId")
+
+		ctx := context.WithValue(r.Context(), k, claims.UserId.String())
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
 }
