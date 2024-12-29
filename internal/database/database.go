@@ -24,13 +24,9 @@ func createClient() *model.Client {
 	}
 }
 
-func GetAllNotes() ([]model.Note, error) {
+func GetAllNotes(userId string) ([]model.Note, error) {
 	var notes []model.Note
 	c := *createClient()
-
-    userId := uuid.New()
-    
-    // Get the token, unhash it, and get the user and input the userId where the userId is
 
 	rows, err := c.Connection.Query("SELECT * FROM Notes WHERE userId = ?", userId)
 	if err != nil {
@@ -59,7 +55,7 @@ func GetNote(id uuid.UUID, userId uuid.UUID) model.Note {
 	var note model.Note
 	c := *createClient()
 
-	row := c.Connection.QueryRow("SELECT ? FROM Notes WHERE userId = ?", id, userId)
+	row := c.Connection.QueryRow("SELECT ? FROM Notes WHERE userId = ?", id, userId.String())
 	row.Scan(&note)
 
 	return note
