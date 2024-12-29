@@ -3,17 +3,14 @@ package router
 import (
 	"encoding/json"
 	"fmt"
-    "strings"
 	"net/http"
+	"strings"
+	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 
-    argon "golang.org/x/crypto/argon2"
-    "crypto/rsa"
-    "crypto/rand"
-
-	//db "florent-haxhiu/todoInGo/internal/database"
-    "florent-haxhiu/todoInGo/internal/model"
+	"florent-haxhiu/todoInGo/internal/model"
 )
 
 func Login(w http.ResponseWriter, r *http.Request) {}
@@ -31,14 +28,19 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-    hashed := saltPassword(user)
+	// TODO hash password
+	hashedPass := model.UserPassHashed{
+		Id:       user.Id,
+		Username: user.Username,
+		Password: user.Password,
+	}
 
-    key, err := generateToken(hashed)
-    if err != nil {
-        http.Error(w, err.Error(), 422)
-        return 
-    }
-    fmt.Println("Token: ", key)
+	key, err := generateToken(hashedPass)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
+		return
+	}
+	fmt.Println("Token: ", key)
 
 	//err = db.SaveUserToDB(saltPassword(user))
 	//if err != nil {
@@ -48,45 +50,60 @@ func Register(w http.ResponseWriter, r *http.Request) {
 }
 
 func generateToken(user model.UserPassHashed) (string, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodRS256, jwt.MapClaims{
-        "userId": user.Id,
-		"username": user.Username,
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &jwt.MapClaims{
+		"iss": "issuer",
+		"exp": time.Now().Add(time.Hour).Unix(),
+		"data": map[string]any{
+			"userId":   user.Id.String(),
+			"username": user.Username,
+		},
 	})
 
-    secret, err := generateKey()
-    if err != nil {
-        return "", err
-    }
-
-    return token.SignedString(secret)
+	return token.SignedString([]byte("random"))
 }
 
-func generateKey() (*rsa.PrivateKey, error) {
-    key, err := rsa.GenerateKey(rand.Reader, 2048)
-    if err != nil {
-        return nil, err
-    }
+// func saltPassword(user model.UserRegister) model.UserPassHashed {
+// 	var salt []byte
+//
+// 	key := argon.IDKey([]byte(user.Password), salt, 1, 64*1024, 4, 32)
+//
+// 	fmt.Println(user)
+// 	fmt.Println(string(key))
+//
+// 	return model.UserPassHashed{
+// 		Id:       user.Id,
+// 		Username: user.Username,
+// 		Password: string(key),
+// 	}
+// }
 
-    return key, nil
+func getTokenPayload(token string) (model.TokenData, error) {
+	var tokenPayload model.TokenData
+
+	// TODO Get a better secret but it works for now
+	payload, err := jwt.Parse(token, func(jwtTok *jwt.Token) (interface{}, error) {
+		return []byte("random"), nil
+	})
+
+	claims := payload.Claims.(jwt.MapClaims)
+
+	tokenPayload.UserId = uuid.MustParse(claims["userId"].(string))
+	tokenPayload.Username = claims["username"].(string)
+
+	if err != nil {
+		return tokenPayload, err
+	}
+
+	return tokenPayload, nil
 }
 
-func saltPassword(user model.UserRegister) model.UserPassHashed {
-    var salt []byte
+func verifyToken(token string) (model.TokenData, error) {
+	newToken := strings.ReplaceAll(token, "Bearer ", "")
 
-    key := argon.IDKey([]byte(user.Password), salt, 1, 64*1024, 4, 32)
+	tokenPayload, err := getTokenPayload(newToken)
+	if err != nil {
+		return tokenPayload, err
+	}
 
-	fmt.Println(user)
-    fmt.Println(key)
-
-
-	return model.UserPassHashed{
-        Id: user.Id,
-        Username: user.Username,
-        Password: string(key),
-    }
-}
-
-func verifyToken(token string) (string) {
-    fmt.Println(token)
-    return strings.ReplaceAll(token, "Bearer ", "")
+	return tokenPayload, nil
 }
