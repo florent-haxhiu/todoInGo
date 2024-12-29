@@ -29,9 +29,9 @@ type UserPassHashed struct {
 	Password string
 }
 
-type TokenPayload struct {
-    UserId uuid.UUID `json:"userId"`
-    Username string `json:"username"`
+type TokenData struct {
+	UserId   uuid.UUID `json:"userId"`
+	Username string    `json:"username"`
 }
 
 type Response struct {
