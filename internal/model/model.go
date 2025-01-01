@@ -41,10 +41,9 @@ type Response struct {
 	Note    Note   `json:"createdNote"`
 }
 
-
 type UserLoginResponse struct {
 	Token      string `json:"token"`
-	Expiration int    `json:"expiration"`
+	Expiration int64  `json:"expiration"`
 }
 
 type ResponseNotes struct {
