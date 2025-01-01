@@ -104,14 +104,13 @@ func SaveUserToDB(user model.UserPassHashed) error {
 	return nil
 }
 
-func GetUserFromDB(user model.UserPassHashed) (model.UserPassHashed, error) {
+func GetUserFromDB(username string) (model.UserPassHashed, error) {
+	var userFromDB model.UserPassHashed
 	c := *createClient()
 
-	statement, err := c.Connection.Prepare("INSERT INTO Users (id, username, password) VALUES (?, ?, ?)")
-	if err != nil {
-		return user, err
-	}
-	statement.Exec(user.Id, user.Username, user.Password)
+	statement := c.Connection.QueryRow("SELECT (id, username, password) FROM Users (id, username, password) WHERE username = ?", username)
 
-	return user, nil
+	statement.Scan(&userFromDB)
+
+	return userFromDB, nil
 }
