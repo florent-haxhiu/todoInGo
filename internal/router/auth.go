@@ -15,7 +15,27 @@ import (
 	"florent-haxhiu/todoInGo/internal/model"
 )
 
-func Login(w http.ResponseWriter, r *http.Request) {}
+func Login(w http.ResponseWriter, r *http.Request) {
+	var user model.UserRegister
+
+	body := json.NewDecoder(r.Body)
+	body.DisallowUnknownFields()
+
+	err := body.Decode(&user)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
+		return
+	}
+
+	UserInDB, err := db.GetUserFromDB(user.Username)
+
+	if (model.UserPassHashed{}) == UserInDB {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	// verifyPassword()
+}
 
 func Register(w http.ResponseWriter, r *http.Request) {
 	var user model.UserRegister
