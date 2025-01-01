@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 
+	db "florent-haxhiu/todoInGo/internal/database"
 	"florent-haxhiu/todoInGo/internal/model"
 )
 
@@ -28,19 +29,19 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO hash password
-	hashedPass := model.UserPassHashed{
-		Id:       user.Id,
-		Username: user.Username,
-		Password: user.Password,
+	hashedPassUserModel, err := saltPassword(user)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotAcceptable)
+		return
 	}
 
-	key, err := generateToken(hashedPass)
+	expDate := time.Now().Add(time.Hour).Unix()
+
+	key, err := generateToken(hashedPassUserModel, expDate)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 		return
 	}
-	fmt.Println("Token: ", key)
 
 	//err = db.SaveUserToDB(saltPassword(user))
 	//if err != nil {
