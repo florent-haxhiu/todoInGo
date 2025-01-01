@@ -43,11 +43,25 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//err = db.SaveUserToDB(saltPassword(user))
-	//if err != nil {
-	//	http.Error(w, err.Error(), http.StatusTeapot)
-	//	return
-	//}
+	err = db.SaveUserToDB(hashedPassUserModel)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusTeapot)
+		return
+	}
+
+	resp := model.UserLoginResponse{
+		Token:      key,
+		Expiration: expDate,
+	}
+
+	b, err := json.Marshal(resp)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusTeapot)
+		return
+	}
+
+	w.WriteHeader(201)
+	w.Write(b)
 }
 
 func generateToken(user model.UserPassHashed, expDate int64) (string, error) {
