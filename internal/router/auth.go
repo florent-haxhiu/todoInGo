@@ -3,11 +3,13 @@ package router
 import (
 	"encoding/json"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
+	"golang.org/x/crypto/bcrypt"
 
 	"florent-haxhiu/todoInGo/internal/model"
 )
@@ -17,7 +19,6 @@ func Login(w http.ResponseWriter, r *http.Request) {}
 func Register(w http.ResponseWriter, r *http.Request) {
 	var user model.UserRegister
 
-	fmt.Println(user)
 	body := json.NewDecoder(r.Body)
 	body.DisallowUnknownFields()
 
@@ -48,33 +49,33 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	//}
 }
 
-func generateToken(user model.UserPassHashed) (string, error) {
+func generateToken(user model.UserPassHashed, expDate int64) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &jwt.MapClaims{
 		"iss": "issuer",
-		"exp": time.Now().Add(time.Hour).Unix(),
+		"exp": expDate,
 		"data": map[string]any{
 			"userId":   user.Id.String(),
 			"username": user.Username,
 		},
 	})
 
-	return token.SignedString([]byte("random"))
+	signingKey := os.Getenv("SIGNING_KEY")
+
+	return token.SignedString([]byte(signingKey))
 }
 
-// func saltPassword(user model.UserRegister) model.UserPassHashed {
-// 	var salt []byte
-//
-// 	key := argon.IDKey([]byte(user.Password), salt, 1, 64*1024, 4, 32)
-//
-// 	fmt.Println(user)
-// 	fmt.Println(string(key))
-//
-// 	return model.UserPassHashed{
-// 		Id:       user.Id,
-// 		Username: user.Username,
-// 		Password: string(key),
-// 	}
-// }
+func saltPassword(user model.UserRegister) (model.UserPassHashed, error) {
+	key, err := bcrypt.GenerateFromPassword([]byte(user.Password), 0)
+	if err != nil {
+		return model.UserPassHashed{}, err
+	}
+
+	return model.UserPassHashed{
+		Id:       user.Id,
+		Username: user.Username,
+		Password: string(key),
+	}, nil
+}
 
 func getTokenPayload(token string) (model.TokenData, error) {
 	var tokenPayload model.TokenData
@@ -105,4 +106,8 @@ func verifyToken(token string) (model.TokenData, error) {
 	}
 
 	return tokenPayload, nil
+}
+
+func verifyPassword(password_from_user string, password_in_db string) error {
+	return bcrypt.CompareHashAndPassword([]byte(password_in_db), []byte(password_from_user))
 }
