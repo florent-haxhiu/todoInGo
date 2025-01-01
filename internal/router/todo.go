@@ -53,6 +53,8 @@ func GetAllNotes(w http.ResponseWriter, r *http.Request) {
 func PostNote(w http.ResponseWriter, r *http.Request) {
 	var note model.Note
 
+	userIdString := r.Context().Value("userId").(string)
+
 	dec := json.NewDecoder(r.Body)
 	dec.DisallowUnknownFields()
 
@@ -62,7 +64,7 @@ func PostNote(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	createdNote, err := db.CreateNote(note)
+	createdNote, err := db.CreateNote(note, userIdString)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
