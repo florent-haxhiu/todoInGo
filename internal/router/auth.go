@@ -29,6 +29,13 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	userInDB, _ := db.GetUserFromDB(user.Username)
+
+	if userInDB != (model.UserPassHashed{}) {
+		http.Error(w, "Username already exists with that name", http.StatusConflict)
+		return
+	}
+
 	hashedPassUserModel, err := saltPassword(user)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotAcceptable)
