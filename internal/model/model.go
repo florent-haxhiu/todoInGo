@@ -41,7 +41,6 @@ type Response struct {
 	Note    Note   `json:"createdNote"`
 }
 
-type UserRegisterResponse struct{}
 
 type UserLoginResponse struct {
 	Token      string `json:"token"`
