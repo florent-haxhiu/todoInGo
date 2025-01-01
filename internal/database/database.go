@@ -61,7 +61,7 @@ func GetNote(id uuid.UUID, userId string) model.Note {
 	return note
 }
 
-func CreateNote(createdNote model.Note) (model.Note, error) {
+func CreateNote(createdNote model.Note, userId string) (model.Note, error) {
 	c := *createClient()
 
 	statement, err := c.Connection.Prepare("INSERT INTO Notes (id, title, body, userId) VALUES (?, ?, ?, ?)")
@@ -69,25 +69,25 @@ func CreateNote(createdNote model.Note) (model.Note, error) {
 		return model.Note{}, err
 	}
 
-	statement.Exec(createdNote.Id.String(), createdNote.Title, createdNote.Body, createdNote.UserId.String())
+	statement.Exec(createdNote.Id.String(), createdNote.Title, createdNote.Body, userId)
 
 	return createdNote, nil
 }
 
-func DeleteNote(noteId uuid.UUID, userId uuid.UUID) model.Note {
+func DeleteNote(noteId uuid.UUID, userId string) model.Note {
 	var note model.Note
 	// _ := *createClient()
 	return note
 }
 
-func UpdateNote(note model.Note, userId uuid.UUID) (model.Note, error) {
+func UpdateNote(note model.Note, userId string) (model.Note, error) {
 	c := *createClient()
 
-	statement, err := c.Connection.Prepare("UPDATE Notes SET title=?, body=?")
+	statement, err := c.Connection.Prepare("UPDATE Notes SET title=?, body=? WHERE userId = ?")
 	if err != nil {
 		return model.Note{}, err
 	}
-	statement.Exec(note.Title, note.Body)
+	statement.Exec(note.Title, note.Body, userId)
 	return note, nil
 }
 
