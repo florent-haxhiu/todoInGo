@@ -126,15 +126,14 @@ func getTokenPayload(token string) (model.TokenData, error) {
 	payload, err := jwt.Parse(token, func(jwtTok *jwt.Token) (interface{}, error) {
 		return []byte("random"), nil
 	})
+	if err != nil {
+		return tokenPayload, err
+	}
 
 	claims := payload.Claims.(jwt.MapClaims)
 
 	tokenPayload.UserId = uuid.MustParse(claims["userId"].(string))
 	tokenPayload.Username = claims["username"].(string)
-
-	if err != nil {
-		return tokenPayload, err
-	}
 
 	return tokenPayload, nil
 }

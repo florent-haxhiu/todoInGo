@@ -15,7 +15,12 @@ func GetNote(w http.ResponseWriter, r *http.Request) {
 	stringId := chi.URLParam(r, "noteId")
 
 	noteId := uuid.MustParse(stringId)
-	userIdString := r.Context().Value("userId").(string)
+	userIdString, ok := r.Context().Value("userId").(string)
+
+	if !ok {
+		http.Error(w, http.StatusText(http.StatusUnprocessableEntity), http.StatusUnprocessableEntity)
+		return
+	}
 
 	note := db.GetNote(noteId, userIdString)
 
@@ -30,7 +35,12 @@ func GetNote(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetAllNotes(w http.ResponseWriter, r *http.Request) {
-	userIdString := r.Context().Value(model.UserId("userId")).(string)
+	userIdString, ok := r.Context().Value(model.UserId("userId")).(string)
+
+	if !ok {
+		http.Error(w, http.StatusText(http.StatusUnprocessableEntity), http.StatusUnprocessableEntity)
+		return
+	}
 
 	notes, err := db.GetAllNotes(userIdString)
 	if err != nil {
@@ -53,7 +63,12 @@ func GetAllNotes(w http.ResponseWriter, r *http.Request) {
 func PostNote(w http.ResponseWriter, r *http.Request) {
 	var note model.Note
 
-	userIdString := r.Context().Value("userId").(string)
+	userIdString, ok := r.Context().Value("userId").(string)
+
+	if !ok {
+		http.Error(w, http.StatusText(http.StatusUnprocessableEntity), http.StatusUnprocessableEntity)
+		return
+	}
 
 	dec := json.NewDecoder(r.Body)
 	dec.DisallowUnknownFields()

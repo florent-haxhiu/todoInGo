@@ -2,7 +2,6 @@ package router
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -41,7 +40,8 @@ func authorizeSession(next http.Handler) http.Handler {
 
 		claims, err := verifyToken(token)
 		if err != nil {
-			fmt.Println(err.Error())
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+			return
 		}
 
 		k := model.UserId("userId")
