@@ -124,7 +124,7 @@ func getTokenPayload(token string) (model.TokenData, error) {
 
 	// TODO Get a better secret but it works for now
 	payload, err := jwt.Parse(token, func(jwtTok *jwt.Token) (interface{}, error) {
-		return []byte("random"), nil
+		return []byte(os.Getenv("SIGNING_KEY")), nil
 	})
 	if err != nil {
 		return tokenPayload, err
