@@ -9,6 +9,7 @@ import (
 	"github.com/go-chi/cors"
 
 	"florent-haxhiu/todoInGo/internal/model"
+	"florent-haxhiu/todoInGo/internal/logger"
 )
 
 func Router() *chi.Mux {
@@ -18,13 +19,14 @@ func Router() *chi.Mux {
 	r.Use(middleware.RequestID)
 	r.Use(middleware.Recoverer)
 	r.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:3000*"},
+		AllowedOrigins:   []string{"http://localhost:5173"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 		ExposedHeaders:   []string{"Link"},
 		AllowCredentials: true,
 		MaxAge:           300, // Maximum value not ignored by any of major browsers
 	}))
+	r.Use(logger.HTTPMiddleware)
 
 	r.Route("/api", func(r chi.Router) {
 		r.Route("/note", func(r chi.Router) {
