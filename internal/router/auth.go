@@ -12,6 +12,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	db "florent-haxhiu/todoInGo/internal/database"
+	"florent-haxhiu/todoInGo/internal/logger"
 	"florent-haxhiu/todoInGo/internal/model"
 )
 
@@ -27,9 +28,9 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	UserInDB, err := db.GetUserFromDB(user.Username)
+	exists, err := db.UserExists(user.Username)
 
-	if (model.UserPassHashed{}) == UserInDB {
+	if !exists {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
@@ -49,9 +50,17 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userInDB, _ := db.GetUserFromDB(user.Username)
+	exists, err := db.UserExists(user.Username)
 
-	if userInDB != (model.UserPassHashed{}) {
+	logger.InfoMsg("User in db", "user", exists)
+
+	if err != nil {
+		http.Error(w, "Error checking user", http.StatusInternalServerError)
+		logger.ErrorMsg("User existence check failed", "error", err)
+		return
+	}
+
+	if exists {
 		http.Error(w, "Username already exists with that name", http.StatusConflict)
 		return
 	}
