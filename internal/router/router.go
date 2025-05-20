@@ -17,14 +17,6 @@ func Router() *chi.Mux {
 	r.Use(middleware.Logger)
 	r.Use(middleware.RequestID)
 	r.Use(middleware.Recoverer)
-
-	r.Route("/note", func(r chi.Router) {
-		r.Use(authorizeSession)
-		r.Get("/", GetAllNotes)
-		r.Post("/", PostNote)
-		r.Route("/{noteId}", func(r chi.Router) {
-			r.Get("/", GetNote)
-			r.Put("/", UpdateNote)
 	r.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000*"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
@@ -33,11 +25,21 @@ func Router() *chi.Mux {
 		AllowCredentials: true,
 		MaxAge:           300, // Maximum value not ignored by any of major browsers
 	}))
+
+	r.Route("/api", func(r chi.Router) {
+		r.Route("/note", func(r chi.Router) {
+			r.Use(authorizeSession)
+			r.Get("/", GetAllNotes)
+			r.Post("/", PostNote)
+			r.Route("/{noteId}", func(r chi.Router) {
+				r.Get("/", GetNote)
+				r.Put("/", UpdateNote)
+			})
 		})
-	})
-	r.Route("/auth", func(r chi.Router) {
-		r.Post("/register", Register)
-		r.Post("/login", Login)
+		r.Route("/auth", func(r chi.Router) {
+			r.Post("/register", Register)
+			r.Post("/login", Login)
+		})
 	})
 
 	return r
