@@ -2,11 +2,13 @@ package database
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 
 	"github.com/google/uuid"
 	_ "github.com/mattn/go-sqlite3"
 
+	"florent-haxhiu/todoInGo/internal/logger"
 	"florent-haxhiu/todoInGo/internal/model"
 )
 
@@ -94,6 +96,8 @@ func UpdateNote(note model.Note, userId string) (model.Note, error) {
 func SaveUserToDB(user model.UserPassHashed) error {
 	c := *createClient()
 
+	logger.DebugMsg("User to be saved in db", "user", user)
+
 	statement, err := c.Connection.Prepare("INSERT INTO Users (id, username, password) VALUES (?, ?, ?)")
 	if err != nil {
 		return err
@@ -104,13 +108,15 @@ func SaveUserToDB(user model.UserPassHashed) error {
 	return nil
 }
 
-func GetUserFromDB(username string) (model.UserPassHashed, error) {
-	var userFromDB model.UserPassHashed
+func UserExists(username string) (bool, error) {
+	var count int 
 	c := *createClient()
 
-	statement := c.Connection.QueryRow("SELECT (id, username, password) FROM Users (id, username, password) WHERE username = ?", username)
+	err := c.Connection.QueryRow("SELECT COUNT(*) FROM Users WHERE username = ?", username).Scan(&count)
 
-	statement.Scan(&userFromDB)
+	if err != nil {
+		return false, fmt.Errorf("Error checking if user exists: %w", err)
+	}
 
-	return userFromDB, nil
+	return count > 0, nil
 }
