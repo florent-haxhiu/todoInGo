@@ -41,6 +41,11 @@ type Response struct {
 	Note    Note   `json:"createdNote"`
 }
 
+type ErrorResponse struct {
+	Message string `json:"message"`
+	Status int `json:"statusCode"`
+}
+
 type UserLoginResponse struct {
 	Token      string `json:"token"`
 	Expiration int64  `json:"expiration"`
