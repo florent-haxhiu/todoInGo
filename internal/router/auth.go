@@ -139,8 +139,8 @@ func generateToken(user model.UserPassHashed, expDate int64) (string, error) {
 	return token.SignedString([]byte(signingKey))
 }
 
-func saltPassword(user model.UserRegister) (model.UserPassHashed, error) {
-	key, err := bcrypt.GenerateFromPassword([]byte(user.Password), 0)
+func saltPassword(user model.User) (model.UserPassHashed, error) {
+	key, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return model.UserPassHashed{}, err
 	}
