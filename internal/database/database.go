@@ -58,7 +58,7 @@ func GetNote(id uuid.UUID, userId string) model.Note {
 	c := *createClient()
 
 	row := c.Connection.QueryRow("SELECT ? FROM Notes WHERE userId = ?", id, userId)
-	row.Scan(&note)
+	row.Scan(&note.Id, &note.Title, &note.Body, &note.UserId)
 
 	return note
 }
