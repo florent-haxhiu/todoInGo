@@ -17,7 +17,7 @@ import (
 )
 
 func Login(w http.ResponseWriter, r *http.Request) {
-	var user model.UserRegister
+	var user model.User
 
 	body := json.NewDecoder(r.Body)
 	body.DisallowUnknownFields()
@@ -35,7 +35,39 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// verifyPassword()
+	user_in_db, err := db.GetUser(user.Username)
+
+	logger.InfoMsg("User from db", user_in_db)
+
+	err = verifyPassword(user.Password, user_in_db.Password)
+
+	if err != nil {
+		err_resp, _ := json.Marshal(model.ErrorResponse{Message: "Details are incorrect", Status: http.StatusUnauthorized})
+		http.Error(w, string(err_resp), http.StatusUnauthorized)
+		return
+	}
+
+	expDate := time.Now().Add(time.Hour).Unix()
+
+	key, err := generateToken(user_in_db, expDate)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
+		return
+	}
+
+	resp := model.UserLoginResponse{
+		Token:      key,
+		Expiration: expDate,
+	}
+
+	b, err := json.Marshal(resp)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusTeapot)
+		return
+	}
+
+	w.WriteHeader(200)
+	w.Write(b)
 }
 
 func Register(w http.ResponseWriter, r *http.Request) {
@@ -67,15 +99,8 @@ func Register(w http.ResponseWriter, r *http.Request) {
 
 	hashedPassUserModel, err := saltPassword(user)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotAcceptable)
-		return
-	}
-
-	expDate := time.Now().Add(time.Hour).Unix()
-
-	key, err := generateToken(hashedPassUserModel, expDate)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
+		err_resp, _ := json.Marshal(model.ErrorResponse{ Message: err.Error(), Status: http.StatusConflict})
+		http.Error(w, string(err_resp), http.StatusConflict)
 		return
 	}
 
@@ -85,9 +110,8 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp := model.UserLoginResponse{
-		Token:      key,
-		Expiration: expDate,
+	resp := model.UserRegisterResponse{
+		Message: "You have successfully registered",
 	}
 
 	b, err := json.Marshal(resp)
