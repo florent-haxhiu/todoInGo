@@ -51,6 +51,10 @@ type UserLoginResponse struct {
 	Expiration int64  `json:"expiration"`
 }
 
+type UserRegisterResponse struct {
+	Message string `json:"message"`
+}
+
 type ResponseNotes struct {
 	Data []Note `json:"data"`
 }
