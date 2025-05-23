@@ -120,3 +120,16 @@ func UserExists(username string) (bool, error) {
 
 	return count > 0, nil
 }
+
+func GetUser(username string) (model.UserPassHashed, error) {
+	var user model.UserPassHashed
+	c := *createClient()
+
+	err := c.Connection.QueryRow("SELECT * FROM Users WHERE username = ?", username).Scan(&user.Id, &user.Username, &user.Password)
+
+	if err != nil {
+		return user, fmt.Errorf("Error checking if user exists: %w", err)
+	}
+
+	return user, nil
+}
