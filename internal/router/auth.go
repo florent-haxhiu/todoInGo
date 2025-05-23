@@ -31,7 +31,8 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	exists, err := db.UserExists(user.Username)
 
 	if !exists {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		err_resp, _ := json.Marshal(model.ErrorResponse{Message: "User does not exist with that username", Status: http.StatusUnauthorized})
+		http.Error(w, string(err_resp), http.StatusUnauthorized)
 		return
 	}
 
@@ -71,7 +72,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func Register(w http.ResponseWriter, r *http.Request) {
-	var user model.UserRegister
+	var user model.User
 
 	body := json.NewDecoder(r.Body)
 	body.DisallowUnknownFields()
@@ -87,13 +88,15 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	logger.InfoMsg("User in db", "user", exists)
 
 	if err != nil {
-		http.Error(w, "Error checking user", http.StatusInternalServerError)
+		err_resp, _ := json.Marshal(model.ErrorResponse{ Message: "Error checking user", Status: http.StatusConflict})
+		http.Error(w, string(err_resp), http.StatusConflict)
 		logger.ErrorMsg("User existence check failed", "error", err)
 		return
 	}
 
 	if exists {
-		http.Error(w, "Username already exists with that name", http.StatusConflict)
+		err_resp, _ := json.Marshal(model.ErrorResponse{ Message: "Username already exists with that name", Status: http.StatusConflict})
+		http.Error(w, string(err_resp), http.StatusConflict)
 		return
 	}
 
@@ -183,5 +186,7 @@ func verifyToken(token string) (model.TokenData, error) {
 }
 
 func verifyPassword(password_from_user string, password_in_db string) error {
+	logger.InfoMsg("password from user: ", password_from_user, " and password in db: ", password_in_db)
+	logger.InfoMsg("result from compare hash and password: ", bcrypt.CompareHashAndPassword([]byte(password_in_db), []byte(password_from_user)))
 	return bcrypt.CompareHashAndPassword([]byte(password_in_db), []byte(password_from_user))
 }
