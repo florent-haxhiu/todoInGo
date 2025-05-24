@@ -1,30 +1,11 @@
 package database
 
 import (
-	"database/sql"
-	"fmt"
-	"log"
-
 	"github.com/google/uuid"
 	_ "github.com/mattn/go-sqlite3"
 
-	"florent-haxhiu/todoInGo/internal/logger"
 	"florent-haxhiu/todoInGo/internal/model"
 )
-
-const (
-	dbname = "todo.db"
-)
-
-func createClient() *model.Client {
-	db, err := sql.Open("sqlite3", dbname)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return &model.Client{
-		Connection: db,
-	}
-}
 
 func GetAllNotes(userId string) ([]model.Note, error) {
 	var notes []model.Note
@@ -58,7 +39,7 @@ func GetNote(id uuid.UUID, userId string) model.Note {
 	c := *createClient()
 
 	row := c.Connection.QueryRow("SELECT ? FROM Notes WHERE userId = ?", id, userId)
-	row.Scan(&note.Id, &note.Title, &note.Body, &note.UserId)
+	row.Scan(&note.Id, &note.Title, &note.Body)
 
 	return note
 }
@@ -76,12 +57,6 @@ func CreateNote(createdNote model.Note, userId string) (model.Note, error) {
 	return createdNote, nil
 }
 
-func DeleteNote(noteId uuid.UUID, userId string) model.Note {
-	var note model.Note
-	// _ := *createClient()
-	return note
-}
-
 func UpdateNote(note model.Note, userId string) (model.Note, error) {
 	c := *createClient()
 
@@ -93,43 +68,8 @@ func UpdateNote(note model.Note, userId string) (model.Note, error) {
 	return note, nil
 }
 
-func SaveUserToDB(user model.UserPassHashed) error {
-	c := *createClient()
-
-	logger.DebugMsg("User to be saved in db", "user", user)
-
-	statement, err := c.Connection.Prepare("INSERT INTO Users (id, username, password) VALUES (?, ?, ?)")
-	if err != nil {
-		return err
-	}
-
-	statement.Exec(user.Id, user.Username, user.Password)
-
-	return nil
-}
-
-func UserExists(username string) (bool, error) {
-	var count int 
-	c := *createClient()
-
-	err := c.Connection.QueryRow("SELECT COUNT(*) FROM Users WHERE username = ?", username).Scan(&count)
-
-	if err != nil {
-		return false, fmt.Errorf("Error checking if user exists: %w", err)
-	}
-
-	return count > 0, nil
-}
-
-func GetUser(username string) (model.UserPassHashed, error) {
-	var user model.UserPassHashed
-	c := *createClient()
-
-	err := c.Connection.QueryRow("SELECT * FROM Users WHERE username = ?", username).Scan(&user.Id, &user.Username, &user.Password)
-
-	if err != nil {
-		return user, fmt.Errorf("Error checking if user exists: %w", err)
-	}
-
-	return user, nil
+func DeleteNote(noteId uuid.UUID, userId string) model.Note {
+	var note model.Note
+	// _ := *createClient()
+	return note
 }
