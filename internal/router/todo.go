@@ -63,10 +63,13 @@ func GetAllNotes(w http.ResponseWriter, r *http.Request) {
 func PostNote(w http.ResponseWriter, r *http.Request) {
 	var note model.Note
 
-	userIdString, ok := r.Context().Value("userId").(string)
+	k := model.UserId("userId")
+
+	userIdString, ok := r.Context().Value(k).(string)
 
 	if !ok {
-		http.Error(w, http.StatusText(http.StatusUnprocessableEntity), http.StatusUnprocessableEntity)
+		err_resp, _ := json.Marshal(model.ErrorResponse{Message: "User ID was not found", Status: http.StatusUnprocessableEntity})
+		http.Error(w, string(err_resp), http.StatusUnprocessableEntity)
 		return
 	}
 
