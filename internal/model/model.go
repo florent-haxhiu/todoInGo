@@ -16,7 +16,7 @@ type Note struct {
 	Id     uuid.UUID `json:"id"`
 	Title  string    `json:"title"`
 	Body   string    `json:"body"`
-	UserId uuid.UUID `json:"userId"`
+	UserId uuid.UUID
 }
 
 type User struct {
