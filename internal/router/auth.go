@@ -3,13 +3,7 @@ package router
 import (
 	"encoding/json"
 	"net/http"
-	"os"
-	"strings"
 	"time"
-
-	"github.com/golang-jwt/jwt/v5"
-	"github.com/google/uuid"
-	"golang.org/x/crypto/bcrypt"
 
 	db "florent-haxhiu/todoInGo/internal/database"
 	"florent-haxhiu/todoInGo/internal/logger"
@@ -88,21 +82,21 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	logger.InfoMsg("User in db", "user", exists)
 
 	if err != nil {
-		err_resp, _ := json.Marshal(model.ErrorResponse{ Message: "Error checking user", Status: http.StatusConflict})
+		err_resp, _ := json.Marshal(model.ErrorResponse{Message: "Error checking user", Status: http.StatusConflict})
 		http.Error(w, string(err_resp), http.StatusConflict)
 		logger.ErrorMsg("User existence check failed", "error", err)
 		return
 	}
 
 	if exists {
-		err_resp, _ := json.Marshal(model.ErrorResponse{ Message: "Username already exists with that name", Status: http.StatusConflict})
+		err_resp, _ := json.Marshal(model.ErrorResponse{Message: "Username already exists with that name", Status: http.StatusConflict})
 		http.Error(w, string(err_resp), http.StatusConflict)
 		return
 	}
 
 	hashedPassUserModel, err := saltPassword(user)
 	if err != nil {
-		err_resp, _ := json.Marshal(model.ErrorResponse{ Message: err.Error(), Status: http.StatusConflict})
+		err_resp, _ := json.Marshal(model.ErrorResponse{Message: err.Error(), Status: http.StatusConflict})
 		http.Error(w, string(err_resp), http.StatusConflict)
 		return
 	}
@@ -127,66 +121,12 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	w.Write(b)
 }
 
-func generateToken(user model.UserPassHashed, expDate int64) (string, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &jwt.MapClaims{
-		"iss": "issuer",
-		"exp": expDate,
-		"data": map[string]any{
-			"userId":   user.Id.String(),
-			"username": user.Username,
-		},
-	})
+func GetUserProfile(w http.ResponseWriter, r *http.Request) {
+	// var user model.User
 
-	signingKey := os.Getenv("SIGNING_KEY")
+	k := model.UserId("userId")
 
-	return token.SignedString([]byte(signingKey))
-}
+	logger.InfoMsg("What is the user id", r.Context().Value(k))
 
-func saltPassword(user model.User) (model.UserPassHashed, error) {
-	key, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
-	if err != nil {
-		return model.UserPassHashed{}, err
-	}
-
-	return model.UserPassHashed{
-		Id:       user.Id,
-		Username: user.Username,
-		Password: string(key),
-	}, nil
-}
-
-func getTokenPayload(token string) (model.TokenData, error) {
-	var tokenPayload model.TokenData
-
-	// TODO Get a better secret but it works for now
-	payload, err := jwt.Parse(token, func(jwtTok *jwt.Token) (any, error) {
-		return []byte(os.Getenv("SIGNING_KEY")), nil
-	})
-	if err != nil {
-		return tokenPayload, err
-	}
-
-	claims := payload.Claims.(jwt.MapClaims)
-
-	tokenPayload.UserId = uuid.MustParse(claims["userId"].(string))
-	tokenPayload.Username = claims["username"].(string)
-
-	return tokenPayload, nil
-}
-
-func verifyToken(token string) (model.TokenData, error) {
-	newToken := strings.ReplaceAll(token, "Bearer ", "")
-
-	tokenPayload, err := getTokenPayload(newToken)
-	if err != nil {
-		return tokenPayload, err
-	}
-
-	return tokenPayload, nil
-}
-
-func verifyPassword(password_from_user string, password_in_db string) error {
-	logger.InfoMsg("password from user: ", password_from_user, " and password in db: ", password_in_db)
-	logger.InfoMsg("result from compare hash and password: ", bcrypt.CompareHashAndPassword([]byte(password_in_db), []byte(password_from_user)))
-	return bcrypt.CompareHashAndPassword([]byte(password_in_db), []byte(password_from_user))
+	// user_in_db, err := db.GetUser(user.Username)
 }
