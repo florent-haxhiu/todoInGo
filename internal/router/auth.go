@@ -120,13 +120,3 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(201)
 	w.Write(b)
 }
-
-func GetUserProfile(w http.ResponseWriter, r *http.Request) {
-	// var user model.User
-
-	k := model.UserId("userId")
-
-	logger.InfoMsg("What is the user id", r.Context().Value(k))
-
-	// user_in_db, err := db.GetUser(user.Username)
-}
